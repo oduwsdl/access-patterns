@@ -104,7 +104,7 @@ if __name__ == "__main__":
             #print agent
             #if agent.startswith("mozilla") or agent.startswith("firefox") or agent.startswith("opera") or agent.startswith("microsoft")  or agent.startswith("safari") or agent.startswith("chrome")  :
             
-            w.write(ip + "\t" + logtime + "\t" + uri + "\t" + tag + "\n");
+            w.write(ip + "\t" + logtime + "\t" + uri + "\t" + tag);
             w.flush();
             wr.write(line);
         except Exception as e:
