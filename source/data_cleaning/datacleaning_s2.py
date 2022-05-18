@@ -70,10 +70,20 @@ if __name__ == "__main__":
             urim = re.compile(r'^(?P<prefix>[\w\-\/]*?\/)(?P<mtime>\d{14})((?P<rflag>[a-z]{2}_))?\/(?P<urir>\S+)$')
             p = urlparse(uri).path ##ParseResult(scheme='http', netloc='wayback.archive.org', path='/web/*/http://SMARTTOWN.RU/', params='', query='', fragment='')
             #print(p)
+
+            #Remove PT robots.txt 
+            # print(uri)
+            # print(p)
+            # print("-----")
+            if p == "/robots.txt":
+                #print(uri)
+                continue
+            #print(uri)
+
             k = urim.findall(p) 
             if k:
                 rflag = k[0][3]
-                print(rflag)
+                #print(rflag)
                 if rflag == "im_":
                     im = 1
                     continue
@@ -86,23 +96,14 @@ if __name__ == "__main__":
                 if ext in ['png','jpg','gif','jpeg','bmp','svg']:
                     im = 1
                     continue
-                if ext in  ['js','jsp','css','ico','swf','txt']:
-                    em = 1
-                    continue
-
-            # #Ignore the embedded resources
-            # if uri.endswith(".js") or uri.endswith(".png") or uri.endswith(".css") or uri.endswith(".jpg") or uri.endswith(".gif") or uri.endswith(".ico") \
-            # or uri.endswith(".jpeg") or uri.endswith(".tif") or uri.endswith(".tiff") \
-            # or uri.endswith(".gif") or uri.endswith(".ico") or uri.endswith(".svg") \
-            # or uri.endswith(".swf") or uri.find(".swf")>-1:
-            #     continue;
-
-            # #20101122150451cs_
-            # if uri.startswith("http://liveweb") or uri.startswith("http://static"):
-            #     continue;
-
-            # if uri.find("web/jsp/")>0:
-            #     continue;
+                if ext in  ['js','jsp','css','ico','swf', 'txt']: #PT robots.txt get caught here, but we are removing it before this line
+                    #print(uri)
+                    if p.endswith("robots.txt"):
+                        pass
+                    else:
+                        em = 1
+                        continue
+            #print(uri)
 
             dateExpression = re.compile( r"\d\d\d\d\d\d\d\d\d\d\d\d\d\d(js_|cs_|fw_)" )
             result = dateExpression.search( uri )
@@ -121,12 +122,12 @@ if __name__ == "__main__":
                 continue    
 
             #Referrer field
-            ref = list[10][1:len(list[10])-1];
+            #ref = list[10][1:len(list[10])-1];
             #if  ref == "\"-\"":
             #    continue
 
-            agent = list[11][1:]
-            agent = agent.lower()
+            # agent = list[11][1:]
+            # agent = agent.lower()
 
             #print agent
             #if agent.startswith("mozilla") or agent.startswith("firefox") or agent.startswith("opera") or agent.startswith("microsoft")  or agent.startswith("safari") or agent.startswith("chrome")  :
@@ -135,7 +136,7 @@ if __name__ == "__main__":
             w.flush();
             wr.write(line);
         except Exception as e:
-            print(e)
+            #print(e)
             pass
 
     w.close()
