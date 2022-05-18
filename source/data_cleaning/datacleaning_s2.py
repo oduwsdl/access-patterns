@@ -6,6 +6,8 @@ import gzip
 import os
 import re
 import zipfile
+from urllib.parse import urlparse 
+
 
 '''
 python3 datacleaning_s2.py /data/LogAnalysis/access_pattern/datasets/fullday_sample/bot_identify/20120202.wayback.access.log.sorted.tag /data/LogAnalysis/access_pattern/datasets/fullday_sample/cleaned_data_s2/20120202.wayback.access.log.sorted.tag.cleaneds2.out1 /data/LogAnalysis/access_pattern/datasets/fullday_sample/cleaned_data_s2/20120202.wayback.access.log.sorted.tag.cleaneds2.out2
@@ -37,19 +39,19 @@ if __name__ == "__main__":
  
     for line in fh:  
         try:
+
             count = count + 1;
             if count % 10000 == 0:
                print(count)
             # print(line)
             list = line.split(' ');
             list2 = line.split('\t');
+            #print(list2)
             tag = list2[1]
-
             #Ignore incomplete logs
             if len(list) <12:
                 continue;
             ip = list[0]
-
             #Ignore incomplete datetime
             if len(list[3]) < 2:
                 continue;
@@ -62,13 +64,38 @@ if __name__ == "__main__":
                 uri = list[6];
             else:
                 continue;
+            im=0
+            em=0
 
-            #Ignore the embedded resources
-            if uri.endswith(".js") or uri.endswith(".png") or uri.endswith(".css") or uri.endswith(".jpg") or uri.endswith(".gif") or uri.endswith(".ico") \
-            or uri.endswith(".jpeg") or uri.endswith(".tif") or uri.endswith(".tiff") \
-            or uri.endswith(".gif") or uri.endswith(".ico") or uri.endswith(".svg") \
-            or uri.endswith(".swf") or uri.find(".swf")>-1:
-                continue;
+            urim = re.compile(r'^(?P<prefix>[\w\-\/]*?\/)(?P<mtime>\d{14})((?P<rflag>[a-z]{2}_))?\/(?P<urir>\S+)$')
+            p = urlparse(uri).path ##ParseResult(scheme='http', netloc='wayback.archive.org', path='/web/*/http://SMARTTOWN.RU/', params='', query='', fragment='')
+            #print(p)
+            k = urim.findall(p) 
+            if k:
+                rflag = k[0][3]
+                print(rflag)
+                if rflag == "im_":
+                    im = 1
+                    continue
+                if rflag in ['js_','cs_','fw_']:    ##Analyse different r_flags
+                    em = 1
+                    continue
+            #else:
+            if not im and not em:  #if coldnt find im or em through r_flag, then check extension
+                ext = p.split('.')[-1].strip().lower()          
+                if ext in ['png','jpg','gif','jpeg','bmp','svg']:
+                    im = 1
+                    continue
+                if ext in  ['js','jsp','css','ico','swf','txt']:
+                    em = 1
+                    continue
+
+            # #Ignore the embedded resources
+            # if uri.endswith(".js") or uri.endswith(".png") or uri.endswith(".css") or uri.endswith(".jpg") or uri.endswith(".gif") or uri.endswith(".ico") \
+            # or uri.endswith(".jpeg") or uri.endswith(".tif") or uri.endswith(".tiff") \
+            # or uri.endswith(".gif") or uri.endswith(".ico") or uri.endswith(".svg") \
+            # or uri.endswith(".swf") or uri.find(".swf")>-1:
+            #     continue;
 
             # #20101122150451cs_
             # if uri.startswith("http://liveweb") or uri.startswith("http://static"):
@@ -108,6 +135,7 @@ if __name__ == "__main__":
             w.flush();
             wr.write(line);
         except Exception as e:
+            print(e)
             pass
 
     w.close()
